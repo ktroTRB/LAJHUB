@@ -1,3 +1,5 @@
+---updated 
+
 --// Modern UI Library with WindUI-style syntax
 getgenv().namehub = "Private"
 local UserInputService = game:GetService('UserInputService')
@@ -96,9 +98,24 @@ function Library:CreateWindow(options)
     Shadow.BorderColor3 = Color3.fromRGB(0, 0, 0)
     Shadow.BorderSizePixel = 0
     Shadow.Position = UDim2.new(0.508668244, 0, 0.5, 0)
-    Shadow.Size = UDim2.new(0, 776, 0, 509)
+    Shadow.Size = window_data.Size
     Shadow.ZIndex = 0
     Shadow.Image = "rbxassetid://17290899982"
+
+    -- Calculate shadow size based on window size (add padding for shadow effect)
+    local shadowSize = window_data.Size
+    if window_data.Size.X.Scale > 0 or window_data.Size.Y.Scale > 0 then
+        -- For scale-based sizing, calculate appropriate shadow padding
+        local shadowPaddingX = math.max(77, shadowSize.X.Scale * 100 + 20)
+        local shadowPaddingY = math.max(83, shadowSize.Y.Scale * 100 + 20)
+        Shadow.Size = UDim2.new(
+            shadowSize.X.Scale, shadowSize.X.Offset + shadowPaddingX,
+            shadowSize.Y.Scale, shadowSize.Y.Offset + shadowPaddingY
+        )
+    else
+        -- For offset-based sizing, use original calculation
+        Shadow.Size = UDim2.new(0, 776, 0, 509)
+    end
 
     local Container = Instance.new("Frame")
     Container.Name = "Container"
@@ -270,8 +287,21 @@ function Library:CreateWindow(options)
             Size = window_data.Size
         }):Play()
 
+        -- Calculate target shadow size for animation
+        local targetShadowSize
+        if window_data.Size.X.Scale > 0 or window_data.Size.Y.Scale > 0 then
+            local shadowPaddingX = math.max(77, window_data.Size.X.Scale * 100 + 20)
+            local shadowPaddingY = math.max(83, window_data.Size.Y.Scale * 100 + 20)
+            targetShadowSize = UDim2.new(
+                window_data.Size.X.Scale, window_data.Size.X.Offset + shadowPaddingX,
+                window_data.Size.Y.Scale, window_data.Size.Y.Offset + shadowPaddingY
+            )
+        else
+            targetShadowSize = UDim2.new(0, 776, 0, 509)
+        end
+
         TweenService:Create(Shadow, TweenInfo.new(0.6, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut), {
-            Size = UDim2.new(0, 776, 0, 509)
+            Size = targetShadowSize
         }):Play()
     end
 
@@ -1229,177 +1259,3 @@ function Library:CreateWindow(options)
             TextLabel.BorderSizePixel = 0
             TextLabel.Position = UDim2.new(0.424475819, 0, 0.5, 0)
             TextLabel.Size = UDim2.new(0, 155, 0, 15)
-            TextLabel.ZIndex = 2
-            TextLabel.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.SemiBold)
-            TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-            TextLabel.TextScaled = true
-            TextLabel.TextSize = 14.000
-            TextLabel.TextWrapped = true
-            TextLabel.TextXAlignment = Enum.TextXAlignment.Left
-            TextLabel.Text = options.Title
-
-            local Box = Instance.new("Frame")
-            Box.Name = "Box"
-            Box.Parent = keybind
-            Box.AnchorPoint = Vector2.new(0.5, 0.5)
-            Box.BackgroundColor3 = Color3.fromRGB(22, 23, 27)
-            Box.BorderColor3 = Color3.fromRGB(0, 0, 0)
-            Box.BorderSizePixel = 0
-            Box.Position = UDim2.new(0.875459313, 0, 0.472972959, 0)
-            Box.Size = UDim2.new(0, 27, 0, 21)
-
-            local UICorner_2 = Instance.new("UICorner")
-            UICorner_2.CornerRadius = UDim.new(0, 4)
-            UICorner_2.Parent = Box
-
-            local TextLabel_2 = Instance.new("TextLabel")
-            TextLabel_2.Parent = Box
-            TextLabel_2.AnchorPoint = Vector2.new(0.5, 0.5)
-            TextLabel_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            TextLabel_2.BackgroundTransparency = 1.000
-            TextLabel_2.BorderColor3 = Color3.fromRGB(0, 0, 0)
-            TextLabel_2.BorderSizePixel = 0
-            TextLabel_2.Position = UDim2.new(0.630466938, 0, 0.5, 0)
-            TextLabel_2.Size = UDim2.new(0, 29, 0, 15)
-            TextLabel_2.ZIndex = 2
-            TextLabel_2.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.SemiBold)
-            TextLabel_2.TextColor3 = Color3.fromRGB(255, 255, 255)
-            TextLabel_2.TextScaled = true
-            TextLabel_2.TextSize = 14.000
-            TextLabel_2.TextWrapped = true
-            TextLabel_2.Text = options.Default or "F"
-
-            if not Library.Flags[flag] then
-                Library.Flags[flag] = options.Default or "F"
-            end
-
-            TextLabel_2.Text = Library.Flags[flag]
-
-            keybind.MouseButton1Click:Connect(function()
-                TextLabel_2.Text = '...'
-                local input = UserInputService.InputBegan:Wait()
-                if input.KeyCode.Name ~= 'Unknown' then
-                    TextLabel_2.Text = input.KeyCode.Name
-                    Library.Flags[flag] = input.KeyCode.Name
-                    Library.save_flags()
-                end
-            end)
-
-            UserInputService.InputBegan:Connect(function(input, processed)
-                if not processed then
-                    if input.KeyCode.Name == Library.Flags[flag] then
-                        options.Callback(Library.Flags[flag])
-                    end
-                end
-            end)
-        end
-
-        function Tab:Section(options)
-            local section = (options.Section == 'right') and right_section or left_section
-
-            local title = Instance.new("TextLabel")
-            title.Name = "Title"
-            title.AnchorPoint = Vector2.new(0.5, 0.5)
-            title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            title.BackgroundTransparency = 1.000
-            title.BorderColor3 = Color3.fromRGB(0, 0, 0)
-            title.BorderSizePixel = 0
-            title.Position = UDim2.new(0.531395316, 0, 0.139784947, 0)
-            title.Size = UDim2.new(0, 201, 0, 15)
-            title.ZIndex = 2
-            title.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.SemiBold)
-            title.TextColor3 = Color3.fromRGB(255, 255, 255)
-            title.TextScaled = true
-            title.TextSize = 14.000
-            title.TextWrapped = true
-            title.TextXAlignment = Enum.TextXAlignment.Left
-            title.Text = options.Title
-            title.Parent = section
-        end
-
-        function Tab:Label(options)
-            local section = (options.Section == 'right') and right_section or left_section
-
-            local label = Instance.new("TextLabel")
-            label.Name = "Label"
-            label.AnchorPoint = Vector2.new(0.5, 0.5)
-            label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            label.BackgroundTransparency = 1.000
-            label.BorderColor3 = Color3.fromRGB(0, 0, 0)
-            label.BorderSizePixel = 0
-            label.Position = UDim2.new(0.531395316, 0, 0.139784947, 0)
-            label.Size = UDim2.new(0, 201, 0, 12)
-            label.ZIndex = 2
-            label.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Regular)
-            label.TextColor3 = Color3.fromRGB(200, 200, 200)
-            label.TextScaled = true
-            label.TextSize = 12.000
-            label.TextWrapped = true
-            label.TextXAlignment = Enum.TextXAlignment.Left
-            label.Text = options.Text or "Label"
-            label.Parent = section
-
-            local Label = {}
-            function Label:update(new_text)
-                label.Text = new_text
-            end
-            return Label
-        end
-
-        tab.MouseButton1Click:Connect(function()
-            Tab:open_tab()
-        end)
-
-        return Tab
-    end
-
-    -- Event handlers
-    Container.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            Library.dragging = true
-            Library.drag_position = input.Position
-            Library.start_position = Container.Position
-
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    Library.dragging = false
-                    Library.drag_position = nil
-                    Library.start_position = nil
-                end
-            end)
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            if Library.dragging and Library.drag_position and Library.start_position then
-                local delta = input.Position - Library.drag_position
-                local position = UDim2.new(
-                    Library.start_position.X.Scale, 
-                    Library.start_position.X.Offset + delta.X, 
-                    Library.start_position.Y.Scale, 
-                    Library.start_position.Y.Offset + delta.Y
-                )
-                TweenService:Create(Container, TweenInfo.new(0.2), {Position = position}):Play()
-                TweenService:Create(Shadow, TweenInfo.new(0.2), {Position = position}):Play()
-            end
-        end
-    end)
-
-    UserInputService.InputBegan:Connect(function(input, processed)
-        if processed then return end
-        if not Library.exist() then return end
-        if input.KeyCode == Enum.KeyCode.Insert then
-            Window:visible()
-        end
-    end)
-
-    mobile_button.MouseButton1Click:Connect(function()
-        Window:visible()
-    end)
-
-    table.insert(Library.windows, window_data)
-    return Window
-end
-
-return Library
